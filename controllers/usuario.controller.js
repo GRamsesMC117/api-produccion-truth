@@ -6,24 +6,26 @@ import { UsuarioModel } from '../models/usuario.model.js';
 // /api/v1/usuarios/register
 const register = async (req, res) => {
     try {
-
-        // Sanitizacion de datos
+        // Sanitización de datos
         let { nombre, apellido, username, password } = req.body;
 
         nombre = validator.trim(validator.escape(nombre));
         apellido = validator.trim(validator.escape(apellido));
         username = validator.trim(validator.escape(username));
+        password = password.trim(); // Elimina espacios ocultos
 
-        // Validación de nombre y apellido: Alfabéticos, espacios permitidos en medio, y longitud entre 2 y 50 caracteres
+        console.log(`Contraseña recibida: '${password}'`); // Debugging
+
+        // Validación de nombre y apellido: Alfabéticos con espacios permitidos
         const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/;
-        if (!nameRegex.test(nombre.trim()) || !nameRegex.test(apellido.trim())) {
+        if (!nameRegex.test(nombre) || !nameRegex.test(apellido)) {
             return res.status(400).json({
                 ok: false,
                 msg: 'Nombre y apellido deben contener solo letras y espacios, y tener entre 2 y 50 caracteres.'
             });
         }
 
-        // Validación de username: Sin espacios ni caracteres especiales
+        // Validación de username: Solo letras, números y guiones bajos
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         if (!usernameRegex.test(username)) {
             return res.status(400).json({
@@ -32,14 +34,16 @@ const register = async (req, res) => {
             });
         }
 
-        // Validación de password: Longitud mínima de 8 caracteres, combinación de mayúsculas, minúsculas y números
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+        // Validación de password: Al menos 8 caracteres, una mayúscula, una minúscula y un número
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
                 ok: false,
                 msg: 'La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.'
             });
         }
+
+        console.log("La contraseña pasó la validación."); // Debugging
 
         // Verificación de usuario existente
         const user = await UsuarioModel.findOneByUsername(username);
@@ -57,14 +61,14 @@ const register = async (req, res) => {
         // Creación de nuevo usuario
         const newUser = await UsuarioModel.create({ nombre, apellido, username, password: hashedPassword });
 
-        const token = jwt.sign({
-            username: newUser.username,
-            role_id: newUser.role_id
-        },
-            process.env.JWT_SECRET,
+        // Generar token
+        const token = jwt.sign(
             {
-                expiresIn: '7d'
-            }
+                username: newUser.username,
+                role_id: newUser.role_id
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
         );
 
         // Respuesta exitosa
@@ -73,7 +77,7 @@ const register = async (req, res) => {
             msg: token,
         });
     } catch (error) {
-        console.log(error);
+        console.log("Error en el registro:", error);
         return res.status(500).json({
             ok: false,
             msg: 'Error interno del servidor'
