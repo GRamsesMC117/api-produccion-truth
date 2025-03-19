@@ -6,26 +6,35 @@ import { UsuarioModel } from '../models/usuario.model.js';
 // /api/v1/usuarios/register
 const register = async (req, res) => {
     try {
-        // Sanitización de datos
-        let { nombre, apellido, username, password } = req.body;
+        // Asegúrate de que req.body no sea undefined o vacío
+        const { nombre, apellido, username, password } = req.body || {};
 
+        // Validación de datos faltantes
+        if (!nombre || !apellido || !username || !password) {
+            return res.status(400).json({
+                ok: false,
+                msg: "Faltan datos en la solicitud. Asegúrate de enviar nombre, apellido, username y password."
+            });
+        }
+
+        // Sanitización de datos
         nombre = validator.trim(validator.escape(nombre));
         apellido = validator.trim(validator.escape(apellido));
         username = validator.trim(validator.escape(username));
-        password = password.trim(); // Elimina espacios ocultos
+        password = password.trim(); // Elimina espacios antes de validar
 
-        console.log(`Contraseña recibida: '${password}'`); // Debugging
+        console.log("Datos recibidos: ", { nombre, apellido, username, password }); // Verifica que lleguen bien
 
-        // Validación de nombre y apellido: Alfabéticos con espacios permitidos
+        // Validación de nombre y apellido
         const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/;
-        if (!nameRegex.test(nombre) || !nameRegex.test(apellido)) {
+        if (!nameRegex.test(nombre.trim()) || !nameRegex.test(apellido.trim())) {
             return res.status(400).json({
                 ok: false,
                 msg: 'Nombre y apellido deben contener solo letras y espacios, y tener entre 2 y 50 caracteres.'
             });
         }
 
-        // Validación de username: Solo letras, números y guiones bajos
+        // Validación de username
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         if (!usernameRegex.test(username)) {
             return res.status(400).json({
@@ -34,7 +43,7 @@ const register = async (req, res) => {
             });
         }
 
-        // Validación de password: Al menos 8 caracteres, una mayúscula, una minúscula y un número
+        // Validación de password
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
@@ -42,8 +51,6 @@ const register = async (req, res) => {
                 msg: 'La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.'
             });
         }
-
-        console.log("La contraseña pasó la validación."); // Debugging
 
         // Verificación de usuario existente
         const user = await UsuarioModel.findOneByUsername(username);
@@ -61,7 +68,7 @@ const register = async (req, res) => {
         // Creación de nuevo usuario
         const newUser = await UsuarioModel.create({ nombre, apellido, username, password: hashedPassword });
 
-        // Generar token
+        // Generación del token JWT
         const token = jwt.sign(
             {
                 username: newUser.username,
