@@ -1,10 +1,6 @@
-// filepath: firebase.config.js
 import { initializeApp } from "firebase/app";
 import admin from 'firebase-admin';
 import dotenv from 'dotenv';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
 dotenv.config();
 
@@ -21,10 +17,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Admin
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const serviceAccount = JSON.parse(readFileSync(join(__dirname, 'config', 'images-79d01-firebase-adminsdk-nrj3j-588c31a28d.json'), 'utf8'));
+// Inicializar Firebase Admin usando variable de entorno
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
