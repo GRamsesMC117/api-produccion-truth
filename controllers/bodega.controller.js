@@ -8,17 +8,24 @@ const createZapatos = async (req, res) => {
     try {
         // Obtener el archivo (imagen)
         const file = req.file;
-
         if (!file) {
             return res.status(400).json({ ok: false, msg: "Se requiere una imagen para el zapato" });
         }
 
-        // Extraer los datos del zapato desde form-data
-        const { codigo, tipo, marca, modelo, material, color, talla, bodega, tienda1, tienda2, precio} = req.body;
+        // 🚨 Asegurar que req.body.zapatos existe y convertirlo en JSON
+        if (!req.body.zapatos) {
+            return res.status(400).json({ ok: false, msg: "Datos de zapatos no recibidos" });
+        }
 
-        // Validar que todos los campos obligatorios están presentes
-        if (!codigo || !tipo || !marca || !modelo || !material || !color || !talla || !bodega || !tienda1 || !tienda2 || !precio) {
-            return res.status(400).json({ ok: false, msg: "Todos los campos son obligatorios" });
+        const zapatos = JSON.parse(req.body.zapatos);
+
+        // Validar que los datos estén completos
+        for (const zapato of zapatos) {
+            if (!zapato.codigo || !zapato.tipo || !zapato.marca || !zapato.modelo ||
+                !zapato.material || !zapato.color || !zapato.talla || !zapato.bodega ||
+                !zapato.tienda1 || !zapato.tienda2 || !zapato.precio) {
+                return res.status(400).json({ ok: false, msg: "Todos los campos son obligatorios" });
+            }
         }
 
         // Subir imagen a Firebase Storage
@@ -37,15 +44,20 @@ const createZapatos = async (req, res) => {
             await blob.makePublic();
             const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-            // Guardar zapato en la base de datos
-            const nuevoZapato = await BodegaModel.create({
-                codigo, tipo, marca, modelo, material, color, talla, bodega, tienda1, tienda2, precio, imagen: publicUrl
-            });
+            // Insertar todos los zapatos en la base de datos
+            const nuevosZapatos = [];
+            for (const zapato of zapatos) {
+                const nuevoZapato = await BodegaModel.create({
+                    ...zapato,
+                    imagen: publicUrl,
+                });
+                nuevosZapatos.push(nuevoZapato);
+            }
 
             return res.status(201).json({
                 ok: true,
-                msg: "Zapato registrado exitosamente",
-                data: nuevoZapato,
+                msg: "Zapatos registrados exitosamente",
+                data: nuevosZapatos,
             });
         });
 
