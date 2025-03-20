@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors'; // 🔴 Importar CORS
+
 import usuarioRouter from './routes/usuario.route.js';
+import bodegaRouter from './routes/bodega.route.js'
 
 const app = express();
 
@@ -23,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 app.use('/api/v1/usuarios', usuarioRouter);
+app.use('/api/v1/bodega', bodegaRouter);
 
 const PORT = process.env.PORT || 3000;
 
