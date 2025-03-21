@@ -14,6 +14,34 @@ const create = async ({ codigo, tipo, marca, modelo, material, color, talla, bod
     return rows[0];
 }
 
+// FUNCION PARA OBTENER ZAPATOS POR TIPO
+const getZapatosPorTipo = async (tipo) => {
+    const query = {
+        text: `
+        SELECT 
+            tipo,
+            modelo,
+            material,
+            color,
+            json_agg(json_build_object('talla', talla, 'bodega', bodega)) AS tallas_disponibles
+        FROM BODEGA
+        WHERE tipo = $1
+        GROUP BY tipo, modelo, material, color
+        ORDER BY modelo, material, color;
+        `,
+        values: [tipo]
+    };
+
+    try {
+        const { rows } = await db.query(query);
+        return rows;
+    } catch (error) {
+        console.error('Error en getZapatosPorTipo:', error);
+        throw error;
+    }
+};
+
 export const BodegaModel = {
-    create
+    create,
+    getZapatosPorTipo
 }
