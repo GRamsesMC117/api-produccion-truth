@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../firebase.config.js";
 import { BodegaModel } from "../models/bodega.model.js";
 
-
 // /api/v1/bodega/create-zapatos
 const createZapatos = async (req, res) => {
     try {
@@ -69,6 +68,29 @@ const createZapatos = async (req, res) => {
     }
 };
 
+// /api/v1/bodega/zapatos-filtrados
+const getZapatosPorTipo = async (req, res) => {
+    try {
+        const { tipo } = req.body;
+
+        if (!tipo) {
+            return res.status(400).json({ ok: false, msg: "El tipo de zapato es obligatorio" });
+        }
+
+        const zapatos = await BodegaModel.getZapatosPorTipo(tipo);
+
+        return res.status(200).json({
+            ok: true,
+            data: zapatos,
+        });
+
+    } catch (error) {
+        console.error("Error en getZapatosPorTipo:", error);
+        return res.status(500).json({ ok: false, msg: "Error interno del servidor" });
+    }
+};
+
 export const BodegaController = {
-    createZapatos
+    createZapatos,
+    getZapatosPorTipo
 }
