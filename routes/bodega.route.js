@@ -7,4 +7,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/create-zapatos', upload.single('file') ,BodegaController.createZapatos);
 
+router.post('/zapatos-por-tipo', BodegaController.getZapatosPorTipo);
+
 export default router;
