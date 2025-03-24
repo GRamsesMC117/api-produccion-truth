@@ -19,15 +19,16 @@ const getZapatosPorTipo = async (tipo) => {
     const query = {
         text: `
         SELECT 
-            tipo,
+            marca,
             modelo,
             material,
             color,
-            json_agg(json_build_object('talla', talla, 'bodega', bodega)) AS tallas_disponibles
+            imagen,
+            json_agg(json_build_object('talla', talla, 'bodega', bodega, 'tienda1', tienda1,'tienda2', tienda2)) AS tallas_disponibles
         FROM BODEGA
         WHERE tipo = $1
-        GROUP BY tipo, modelo, material, color
-        ORDER BY modelo, material, color;
+        GROUP BY marca, modelo, material, color, imagen
+        ORDER BY marca, modelo, material, color, imagen;
         `,
         values: [tipo]
     };
