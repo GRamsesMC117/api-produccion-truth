@@ -24,7 +24,14 @@ const getZapatosPorTipo = async (tipo) => {
             material,
             color,
             imagen,
-            json_agg(json_build_object('talla', talla, 'bodega', bodega, 'tienda1', tienda1,'tienda2', tienda2)) AS tallas_disponibles
+            json_agg(
+                json_build_object(
+                    'talla', talla, 
+                    'bodega', bodega, 
+                    'tienda1', CASE WHEN tienda1 >= 1 THEN tienda1 ELSE NULL END, 
+                    'tienda2', CASE WHEN tienda2 >= 1 THEN tienda2 ELSE NULL END
+                )
+            ) AS tallas_disponibles
         FROM BODEGA
         WHERE tipo = $1
         GROUP BY marca, modelo, material, color, imagen
