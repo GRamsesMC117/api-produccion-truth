@@ -49,7 +49,54 @@ const getZapatosPorTipo = async (tipo) => {
     }
 };
 
+// FUNCIÓN PARA OBTENER UN ZAPATO POR MEDIO DE FILTROS
+const getZapatoFiltro = async (filtros) => {
+    // Extraer los filtros que se permiten
+    const { marca, modelo, material, color, talla } = filtros;
+
+    // Lista de parámetros y valores dinámicos
+    let condiciones = [];
+    let valores = [];
+    
+    if (marca) {
+        valores.push(marca);
+        condiciones.push(`marca = $${valores.length}`);
+    }
+    if (modelo) {
+        valores.push(modelo);
+        condiciones.push(`modelo = $${valores.length}`);
+    }
+    if (material) {
+        valores.push(material);
+        condiciones.push(`material = $${valores.length}`);
+    }
+    if (color) {
+        valores.push(color);
+        condiciones.push(`color = $${valores.length}`);
+    }
+    if (talla) {
+        valores.push(talla);
+        condiciones.push(`talla = $${valores.length}`);
+    }
+
+    // Construcción de la consulta SQL
+    const query = {
+        text: `SELECT cid, marca, modelo, material, color, talla FROM bodega` +
+            (condiciones.length ? ` WHERE ` + condiciones.join(' AND ') : ''),
+        values: valores
+    };
+
+    try {
+        const { rows } = await pool.query(query);
+        return rows;
+    } catch (error) {
+        console.error('Error en getZapatoFiltro:', error);
+        throw error;
+    }
+};
+
 export const BodegaModel = {
     create,
-    getZapatosPorTipo
+    getZapatosPorTipo,
+    getZapatoFiltro
 }
