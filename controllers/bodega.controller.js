@@ -90,7 +90,42 @@ const getZapatosPorTipo = async (req, res) => {
     }
 };
 
+// /api/v1/bodega/zapato-filtro
+const getZapatoFiltroController = async (req, res) => {
+    try {
+        // Extraer filtros desde query params
+        const { marca, modelo, material, color, talla } = req.query;
+
+        // Construir objeto de filtros (solo los que tienen valor)
+        const filtros = {};
+        if (marca) filtros.marca = marca;
+        if (modelo) filtros.modelo = modelo;
+        if (material) filtros.material = material;
+        if (color) filtros.color = color;
+        if (talla) filtros.talla = talla;
+
+        // Obtener los zapatos filtrados desde el modelo
+        const zapatos = await getZapatoFiltro(filtros);
+
+        // Responder con los datos obtenidos
+        return res.status(200).json({
+            ok: true,
+            msg: zapatos.length ? 'Zapatos encontrados' : 'No se encontraron zapatos',
+            data: zapatos
+        });
+
+    } catch (error) {
+        console.error('Error en getZapatoFiltroController:', error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error en el servidor'
+        });
+    }
+};
+
+
 export const BodegaController = {
     createZapatos,
-    getZapatosPorTipo
+    getZapatosPorTipo,
+    getZapatoFiltroController
 }
