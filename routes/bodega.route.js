@@ -9,4 +9,6 @@ router.post('/create-zapatos', upload.single('file') ,BodegaController.createZap
 
 router.post('/zapatos-por-tipo', BodegaController.getZapatosPorTipo);
 
+router.post('/zapato-filtro', BodegaController.getZapatoFiltroController);
+
 export default router;
