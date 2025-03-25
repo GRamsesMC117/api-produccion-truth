@@ -94,7 +94,7 @@ const getZapatosPorTipo = async (req, res) => {
 const getZapatoFiltroController = async (req, res) => {
     try {
         // Extraer filtros desde query params
-        const { marca, modelo, material, color, talla } = req.query;
+        const { marca, modelo, material, color, talla } = req.body;
 
         // Construir objeto de filtros (solo los que tienen valor)
         const filtros = {};
