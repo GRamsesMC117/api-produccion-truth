@@ -90,42 +90,40 @@ const getZapatosPorTipo = async (req, res) => {
     }
 };
 
-// /api/v1/bodega/zapato-filtro
-const getZapatoFiltroController = async (req, res) => {
+// /api/v1/bodega/get-zapato-by-funcion
+const getZapatosBySearch = async (req, res) => {
     try {
-        // Extraer filtros desde query params
-        const { marca, modelo, material, color, talla } = req.body;
+        const {marca, modelo, material, color} = req.body;
 
-        // Construir objeto de filtros (solo los que tienen valor)
-        const filtros = {};
-        if (marca) filtros.marca = marca;
-        if (modelo) filtros.modelo = modelo;
-        if (material) filtros.material = material;
-        if (color) filtros.color = color;
-        if (talla) filtros.talla = talla;
+        // Verificamos que estamos recibiendo
+        console.log('Datos recibidos:', req.body);
 
-        // Obtener los zapatos filtrados desde el modelo
-        const zapatos = await getZapatoFiltro(filtros);
+        // Validar si al menos uno de los parametros tiene valor
+        if (!(marca || modelo || material || color)) {
+            return res.status(400).json({
+                ok: false,
+                msg: "Se requiere al menos un parametro de busqueda"
+            });
+        }
 
-        // Responder con los datos obtenidos
+        const zapatos = await BodegaModel.getZapatosBySearch({marca, modelo, material, color});
+
         return res.status(200).json({
             ok: true,
-            msg: zapatos.length ? 'Zapatos encontrados' : 'No se encontraron zapatos',
-            data: zapatos
+            data: zapatos,
         });
 
     } catch (error) {
-        console.error('Error en getZapatoFiltroController:', error);
+        console.error(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error en el servidor'
+            msg: "Error interno del servidor"
         });
     }
 };
 
-
 export const BodegaController = {
     createZapatos,
     getZapatosPorTipo,
-    getZapatoFiltroController
+    getZapatosBySearch
 }
