@@ -49,54 +49,26 @@ const getZapatosPorTipo = async (tipo) => {
     }
 };
 
-// FUNCIÓN PARA OBTENER UN ZAPATO POR MEDIO DE FILTROS
-const getZapatoFiltro = async (filtros) => {
-    // Extraer los filtros que se permiten
-    const { marca, modelo, material, color, talla } = filtros;
-
-    // Lista de parámetros y valores dinámicos
-    let condiciones = [];
-    let valores = [];
-    
-    if (marca) {
-        valores.push(marca);
-        condiciones.push(`marca = $${valores.length}`);
-    }
-    if (modelo) {
-        valores.push(modelo);
-        condiciones.push(`modelo = $${valores.length}`);
-    }
-    if (material) {
-        valores.push(material);
-        condiciones.push(`material = $${valores.length}`);
-    }
-    if (color) {
-        valores.push(color);
-        condiciones.push(`color = $${valores.length}`);
-    }
-    if (talla) {
-        valores.push(talla);
-        condiciones.push(`talla = $${valores.length}`);
-    }
-
-    // Construcción de la consulta SQL
+// FUNCION PARA OBTENER ZAPATOS POR MEDIO DE UNA BUSQUEDA CON UNA FUNCION ALMACENDAD
+const getZapatosBySearch = async ({marca, modelo, material, color}) => {
     const query = {
-        text: `SELECT cid, marca, modelo, material, color, talla FROM bodega` +
-            (condiciones.length ? ` WHERE ` + condiciones.join(' AND ') : ''),
-        values: valores
-    };
-
+        text: `
+        SELECT * FROM buscar_bodega($1, $2, $3, $4)
+        `,
+        values: [marca, modelo, material, color]
+    }
     try {
-        const { rows } = await pool.query(query);
+        const {rows} = await db.query(query);
         return rows;
     } catch (error) {
-        console.error('Error en getZapatoFiltro:', error);
-        throw error;
+        console.error('Error en getZapatosBySearch:', error)
+        throw error
     }
-};
+}
+
 
 export const BodegaModel = {
     create,
     getZapatosPorTipo,
-    getZapatoFiltro
+    getZapatosBySearch
 }
