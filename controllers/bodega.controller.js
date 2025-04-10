@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../firebase.config.js";
+import axios from "axios";
 import { BodegaModel } from "../models/bodega.model.js";
 
 // /api/v1/bodega/create-zapatos
