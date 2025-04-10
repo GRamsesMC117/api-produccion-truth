@@ -122,8 +122,69 @@ const getZapatosBySearch = async (req, res) => {
     }
 };
 
+// /api/v1/bodega/generar-etiqueta/
+const generarEtiqueta = async (req, res) => {
+    try {
+        const { cid } = req.body;
+
+        // Validar que el CID sea un número válido
+        if (!cid || isNaN(cid)) {
+            return res.status(400).json({ ok: false, msg: "CID inválido o no proporcionado" });
+        }
+
+        // Buscar el zapato por su CID
+        const zapato = await BodegaModel.findByCID(cid);
+
+        // Verificar si el zapato existe
+        if (!zapato) {
+            return res.status(404).json({ ok: false, msg: "Zapato no encontrado" });
+        }
+
+        // Generar el código ZPL
+        const zpl = `
+            ^XA
+            ^FO30,80^A0N,80,80^FD${zapato.marca}^FS
+            ^FO50,190^A0N,90,90^FDModelo: ${zapato.modelo}^FS
+            ^FO50,300^A0N,90,90^FD${zapato.material} ${zapato.color}^FS
+            ^FO550,50^A0N,100,100^FD${zapato.talla}^FS
+            ^FO30,420^A0N,60,60^FD${zapato.tipo}^FS
+            ^FO200,500^BCN,100,Y,N,N^FD${zapato.codigo}^FS
+
+            ^FO30,650^A0N,80,80^FD${zapato.marca}^FS
+            ^FO50,750^A0N,90,90^FDModelo: ${zapato.modelo}^FS
+            ^FO50,850^A0N,90,90^FD${zapato.material} ${zapato.color}^FS
+            ^FO550,650^A0N,100,100^FD${zapato.talla}^FS
+            ^FO30,950^A0N,60,60^FD${zapato.tipo}^FS
+            ^FO200,1050^BCN,100,Y,N,N^FD${zapato.codigo}^FS
+            ^XZ
+        `;
+
+        // Enviar el código ZPL a Labelary para obtener la imagen de la etiqueta
+        const response = await axios.post(
+            'http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/',
+            zpl,
+            {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                responseType: 'arraybuffer',
+            }
+        );
+
+        // Configurar las cabeceras para devolver la imagen
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', 'inline; filename=etiqueta.png');
+
+        // Enviar la imagen como respuesta
+        res.send(response.data);
+
+    } catch (error) {
+        console.error("Error al generar la etiqueta:", error);
+        return res.status(500).json({ ok: false, msg: "Error interno del servidor" });
+    }
+};
+
 export const BodegaController = {
     createZapatos,
     getZapatosPorTipo,
-    getZapatosBySearch
+    getZapatosBySearch,
+    generarEtiqueta
 }
