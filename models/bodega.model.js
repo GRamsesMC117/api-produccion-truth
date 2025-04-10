@@ -66,9 +66,28 @@ const getZapatosBySearch = async ({marca, modelo, material, color}) => {
     }
 }
 
+// FUNCION PARA BUSCAR UN ZAPATO POR SU CID
+const findByCID = async (cid) => {
+    const query = {
+        text: `SELECT marca, modelo, material, color, talla, tipo, codigo, bodega 
+        FROM BODEGA 
+        WHERE CID = $1`,
+        values: [cid],
+    };
+
+    try {
+        const { rows } = await db.query(query);
+        return rows[0];
+    }
+    catch (error) {
+        console.error("Error en findByCID:", error);
+        throw error;
+    }
+}
 
 export const BodegaModel = {
     create,
     getZapatosPorTipo,
-    getZapatosBySearch
+    getZapatosBySearch,
+    findByCID
 }
