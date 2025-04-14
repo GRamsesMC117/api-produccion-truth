@@ -94,7 +94,7 @@ const getZapatosPorTipo = async (req, res) => {
 // /api/v1/bodega/get-zapato-by-funcion
 const getZapatosBySearch = async (req, res) => {
     try {
-        const {marca, modelo, material, color} = req.body;
+        const { marca, modelo, material, color } = req.body;
 
         // Verificamos que estamos recibiendo
         console.log('Datos recibidos:', req.body);
@@ -107,7 +107,7 @@ const getZapatosBySearch = async (req, res) => {
             });
         }
 
-        const zapatos = await BodegaModel.getZapatosBySearch({marca, modelo, material, color});
+        const zapatos = await BodegaModel.getZapatosBySearch({ marca, modelo, material, color });
 
         return res.status(200).json({
             ok: true,
@@ -183,9 +183,37 @@ const generarEtiqueta = async (req, res) => {
     }
 };
 
+// /api/v1/bodega/getZapato-CID/
+const getZapatoCID = async (req, res) => {
+    try {
+        const { cid } = req.body;
+
+        // Validar que el CID sea un número válido
+        if (!cid || isNaN(cid)) {
+            return res.status(400).json({ ok: false, msg: "CID inválido o no proporcionado" });
+        }
+
+        // Buscar el zapato por su CID
+        const zapato = await BodegaModel.findByCID(cid);
+
+        // Verificar si el zapato existe
+        if (!zapato) {
+            return res.status(404).json({ ok: false, msg: "Zapato no encontrado" });
+        }
+
+        // Enviar zapato como respuesta
+        return res.status(200).json({ ok: true, data: zapato });
+
+    } catch (error) {
+        console.error("Error al obtener zapato:", error);
+        return res.status(500).json({ ok: false, msg: "Error del servidor" });
+    }
+};
+
 export const BodegaController = {
     createZapatos,
     getZapatosPorTipo,
     getZapatosBySearch,
-    generarEtiqueta
+    generarEtiqueta,
+    getZapatoCID
 }
