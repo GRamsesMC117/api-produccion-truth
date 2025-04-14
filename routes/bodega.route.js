@@ -11,6 +11,8 @@ router.post('/zapatos-por-tipo', BodegaController.getZapatosPorTipo);
 
 router.post('/get-zapato-by-funcion', BodegaController.getZapatosBySearch);
 
+router.post('/getZapatoCID', BodegaController.getZapatoCID);
+
 router.post('/generar-etiqueta', BodegaController.generarEtiqueta);
 
 export default router;
