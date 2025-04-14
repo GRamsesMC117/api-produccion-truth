@@ -69,7 +69,8 @@ const getZapatosBySearch = async ({marca, modelo, material, color}) => {
 // FUNCION PARA BUSCAR UN ZAPATO POR SU CID
 const findByCID = async (cid) => {
     const query = {
-        text: `SELECT marca, modelo, material, color, talla, tipo, codigo, bodega 
+        text: `SELECT 
+        cid, tipo, marca, modelo, material, color, talla, bodega, tienda1, tienda2, precio
         FROM BODEGA 
         WHERE CID = $1`,
         values: [cid],
