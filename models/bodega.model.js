@@ -86,9 +86,46 @@ const findByCID = async (cid) => {
     }
 }
 
+// FUNCION PARA ACTUALIZAR UN ZAPATO POR SU CID
+const updateZapatoByCID = async (cid, updates) => {
+    const fields = [];
+    const values = [];
+    let index = 1;
+
+    // Recorrer los campos a actualizar
+    for (const key in updates) {
+        if (updates[key] !== undefined && updates[key] !== null) {
+            fields.push(`${key} = $${index}`);
+            values.push(updates[key]);
+            index++;
+        }
+    }
+
+    // Si no hay campos a actualizar, no ejecutar la consulta
+    if (fields.length === 0) {
+        throw new Error("No hay datos para actualizar");
+    }
+
+    values.push(cid); // Agregar el CID al final para el WHERE
+
+    const query = {
+        text: `UPDATE BODEGA SET ${fields.join(", ")} WHERE CID = $${index} RETURNING *`,
+        values,
+    };
+
+    try {
+        const { rows } = await db.query(query);
+        return rows[0]; // Devolver el zapato actualizado
+    } catch (error) {
+        console.error("Error en updateZapatoByCID:", error);
+        throw error;
+    }
+};
+
 export const BodegaModel = {
     create,
     getZapatosPorTipo,
     getZapatosBySearch,
-    findByCID
+    findByCID,
+    updateZapatoByCID
 }
