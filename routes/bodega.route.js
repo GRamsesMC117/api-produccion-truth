@@ -13,6 +13,8 @@ router.post('/get-zapato-by-funcion', BodegaController.getZapatosBySearch);
 
 router.post('/getZapatoCID', BodegaController.getZapatoCID);
 
+router.put('/update-zapato', BodegaController.updateZapatoByCID);
+
 router.post('/generar-etiqueta', BodegaController.generarEtiqueta);
 
 export default router;
