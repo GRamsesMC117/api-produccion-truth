@@ -210,10 +210,54 @@ const getZapatoCID = async (req, res) => {
     }
 };
 
+// /api/v1/bodega/update-zapato/
+const updateZapatoByCID = async (req, res) => {
+    try {
+        const { cid, ...updates } = req.body; // Extraer CID y los campos a actualizar desde el body
+
+        // Validar que el CID sea un número válido
+        if (!cid || isNaN(cid)) {
+            return res.status(400).json({ ok: false, msg: "CID inválido o no proporcionado" });
+        }
+
+        // Verificar que haya al menos un campo para actualizar (excluyendo CID)
+        const camposActualizables = ["marca", "modelo", "material", "color", "bodega", "tienda1", "tienda2", "precio", "descripcion"];
+        const datosValidos = {};
+
+        for (const campo of camposActualizables) {
+            if (updates[campo] !== undefined && updates[campo] !== null) {
+                datosValidos[campo] = updates[campo];
+            }
+        }
+
+        if (Object.keys(datosValidos).length === 0) {
+            return res.status(400).json({ ok: false, msg: "Debe enviar al menos un campo para actualizar" });
+        }
+
+        // Llamar al modelo para actualizar el zapato
+        const zapatoActualizado = await BodegaModel.updateZapatoByCID(cid, datosValidos);
+
+        if (!zapatoActualizado) {
+            return res.status(404).json({ ok: false, msg: "Zapato no encontrado" });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            msg: "Zapato actualizado correctamente",
+            data: zapatoActualizado,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ ok: false, msg: "Error interno del servidor" });
+    }
+};
+
 export const BodegaController = {
     createZapatos,
     getZapatosPorTipo,
     getZapatosBySearch,
     generarEtiqueta,
-    getZapatoCID
+    getZapatoCID,
+    updateZapatoByCID
 }
